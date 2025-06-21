@@ -89,3 +89,26 @@ Contributions are welcome! Please submit a pull request or open an issue for any
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Docker Deployment
+
+You can run the agent API using Docker:
+
+1. Make sure you have Docker and Docker Compose installed on your system.
+
+2. Build and start the container:
+   ```
+   docker-compose up -d
+   ```
+
+3. The API will be available at `http://localhost:3021`.
+
+4. View logs:
+   ```
+   docker-compose logs -f
+   ```
+
+5. Stop the container:
+   ```
+   docker-compose down
+   ```

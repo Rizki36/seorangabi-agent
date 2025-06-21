@@ -11,4 +11,5 @@ dependencies = [
     "pytest>=8.4.1",
     "python-dotenv>=1.1.0",
     "requests>=2.32.4",
+    "flask>=3.0.0",
 ]
