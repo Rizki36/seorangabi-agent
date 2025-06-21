@@ -100,5 +100,34 @@ def get_history(session_id):
         'history': agent.history
     })
 
+@app.route('/ask', methods=['POST'])
+@token_required
+def ask():
+    """Ask a question to the agent without creating a session"""
+    data = request.json
+    
+    if not data:
+        return jsonify({
+            'status': 'error',
+            'message': 'No data provided'
+        }), 400
+        
+    message = data.get('message')
+    
+    if not message:
+        return jsonify({
+            'status': 'error',
+            'message': 'Missing message'
+        }), 400
+    
+    # Create a temporary agent for this request
+    agent = Agent(config=config)
+    response = agent.process_message(message)
+    
+    return jsonify({
+        'status': 'success',
+        'message': response
+    })
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3021)

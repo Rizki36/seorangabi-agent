@@ -10,3 +10,12 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    networks:
+      - default
+      - seorangabi-network
+
+networks:
+  default:
+    driver: bridge
+  seorangabi-network:
+    external: true
