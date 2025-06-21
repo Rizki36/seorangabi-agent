@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seorangabi-agent"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "litellm>=1.72.9",
+    "pytest>=8.4.1",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.4",
+]
