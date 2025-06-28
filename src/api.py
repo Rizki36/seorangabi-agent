@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from agent_query import AgentQuery
+from src.agent_query import AgentQuery
 from src.config import load_config
 from functools import wraps
 import logging

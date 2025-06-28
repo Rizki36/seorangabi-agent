@@ -1,5 +1,5 @@
 import unittest
-from agent_query import AgentQuery
+from src.agent_query import AgentQuery
 
 class TestAgent(unittest.TestCase):
 
