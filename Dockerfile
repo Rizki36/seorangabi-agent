@@ -7,6 +7,7 @@ COPY pyproject.toml ./
 
 # Install the project in development mode
 RUN pip install -e .
+RUN pip install gunicorn
 
 # Copy source code
 COPY . .
@@ -15,4 +16,4 @@ COPY . .
 EXPOSE 3021
 
 # Start the API
-CMD ["python", "-m", "src.api"]
+CMD ["gunicorn", "--bind", "0.0.0.0:3021", "src.api:app"]
