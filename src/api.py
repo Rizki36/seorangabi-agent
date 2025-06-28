@@ -1,8 +1,16 @@
 from flask import Flask, request, jsonify
-from src.agent import Agent
+from agent_query import AgentQuery
 from src.config import load_config
 from functools import wraps
-import uuid
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.FileHandler("query_log.log"), logging.StreamHandler()]
+)
+logger = logging.getLogger("database-agent")
 
 app = Flask(__name__)
 
@@ -34,72 +42,6 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.route('/chat/new', methods=['POST'])
-@token_required
-def new_chat():
-    """Create a new chat session with the agent"""
-    session_id = str(uuid.uuid4())
-    sessions[session_id] = Agent(config=config)
-    
-    return jsonify({
-        'status': 'success',
-        'message': 'New chat session created',
-        'session_id': session_id
-    })
-
-@app.route('/chat/message', methods=['POST'])
-@token_required
-def process_message():
-    """Process a message with the agent"""
-    data = request.json
-    
-    if not data:
-        return jsonify({
-            'status': 'error',
-            'message': 'No data provided'
-        }), 400
-        
-    session_id = data.get('session_id')
-    message = data.get('message')
-    
-    if not session_id or not message:
-        return jsonify({
-            'status': 'error',
-            'message': 'Missing session_id or message'
-        }), 400
-        
-    if session_id not in sessions:
-        return jsonify({
-            'status': 'error',
-            'message': 'Invalid session ID'
-        }), 404
-    
-    # Process the message with the agent
-    agent = sessions[session_id]
-    response = agent.process_message(message)
-    
-    return jsonify({
-        'status': 'success',
-        'message': response
-    })
-    
-@app.route('/chat/history/<session_id>', methods=['GET'])
-@token_required
-def get_history(session_id):
-    """Get chat history for a session"""
-    if session_id not in sessions:
-        return jsonify({
-            'status': 'error',
-            'message': 'Invalid session ID'
-        }), 404
-        
-    agent = sessions[session_id]
-    
-    return jsonify({
-        'status': 'success',
-        'history': agent.history
-    })
-
 @app.route('/ask', methods=['POST'])
 @token_required
 def ask():
@@ -121,13 +63,48 @@ def ask():
         }), 400
     
     # Create a temporary agent for this request
-    agent = Agent(config=config)
+    agent = AgentQuery(config=config)
     response = agent.process_message(message)
     
     return jsonify({
         'status': 'success',
         'message': response
     })
+
+@app.route('/query', methods=['POST'])
+@token_required
+def query_database():
+    """Convert a natural language query to a database query"""
+    data = request.json
+    
+    if not data:
+        return jsonify({
+            'status': 'error',
+            'message': 'No data provided'
+        }), 400
+        
+    query = data.get('query')
+    
+    if not query:
+        return jsonify({
+            'status': 'error',
+            'message': 'Missing query'
+        }), 400
+    
+    # Log the incoming query request
+    logger.info(f"Database query request: {query}")
+    
+    # Create a temporary agent for this request
+    agent = AgentQuery(config=config)
+    result = agent.process_database_query(query)
+    
+    # Log the result for security audit
+    if result.get('is_safe', False):
+        logger.info(f"Generated safe query: {result.get('query')}")
+    else:
+        logger.warning(f"Rejected unsafe query. Reason: {result.get('reason')}")
+    
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3021)
